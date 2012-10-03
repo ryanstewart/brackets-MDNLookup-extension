@@ -30,14 +30,27 @@ define(function (require, exports, module) {
     
     // Brackets modules
     var EditorManager           = brackets.getModule("editor/EditorManager"),
-        ProjectManager          = brackets.getModule("project/ProjectManager");
+        ProjectManager          = brackets.getModule("project/ProjectManager"),  
+        KeyBindingManager       = brackets.getModule("command/KeyBindingManager"),
+        CommandManager          = brackets.getModule("command/CommandManager"),
+        Commands                = brackets.getModule("command/Commands"),   
+        Menus                   = brackets.getModule("command/Menus");
     
     // Local modules
     require("lscache");
     var HtmlViewer         = require("HtmlViewer");
-    var ExtensionsToolbar  = require("ExtensionsToolbar");
     var tagData = {};
-  
+    var editor = EditorManager.getCurrentFullEditor();
+    var contextMenu = Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU);
+    var COMMAND_ID = "com.digitalbackcountry.mdnextension";
+    
+    /* Register the commands */
+    CommandManager.register("MDN Lookup", COMMAND_ID, handleMDNLookup);
+    
+    /* Add menus */
+    contextMenu.addMenuItem(COMMAND_ID);
+
+    
     /**
      * Return the token string that is at the specified position.
      *
@@ -63,9 +76,7 @@ define(function (require, exports, module) {
     }
     
     /**
-     * This function is registered with EditManager as an inline editor provider. It creates an inline editor
-     * when cursor is on a JavaScript function name, find all functions that match the name
-     * and show (one/all of them) in an inline editor.
+     * This creates an inline editor when the cursor is on a valid HTML tag
      *
      * @param {!Editor} editor
      * @param {!{line:Number, ch:Number}} pos
@@ -73,6 +84,7 @@ define(function (require, exports, module) {
      *      or null if we're not going to provide anything.
      */
     function inlineMDNLookup(hostEditor, pos) {
+//        window.alert('holla back!');
         if (hostEditor._codeMirror.getOption("mode") !== "htmlmixed" && hostEditor._codeMirror.getOption("mode") !== "html") {
             return null;
         }
@@ -101,9 +113,8 @@ define(function (require, exports, module) {
         var viewer = new HtmlViewer(header, html);
         viewer.load(hostEditor);
         
-        result.resolve(viewer);
-        
-        return result.promise();
+        // open up a new inline editor window with the MDN content
+        editor.addInlineWidget(editor.getSelection(false).start,viewer);
     }
     
     function loadJSON(scriptUrl, callback) {
@@ -126,6 +137,8 @@ define(function (require, exports, module) {
           lscache.set(LS_TAG_DATA, tagData, 60*12);
       });
     }
-  
-    ExtensionsToolbar.addToToolbar('MDN', inlineMDNLookup);
+    
+    function handleMDNLookup() {
+        inlineMDNLookup(editor);
+    }
 });

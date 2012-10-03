@@ -52,15 +52,23 @@ define(function (require, exports, module) {
             .html(this.header);
       
         this.$div = $("<div/>")
-            .css("background", "white")
+//            .css("background", "white")
             .css("padding", "6px")
             .css("overflow-x", "auto")
+            .css("-webkit-user-select", "auto")
+            .css("font-family", "SourceSans")
             .css("height", this.height)
             .append($titleDiv)
             .append(this.html);
         
         this.$htmlContent.append(this.$div);
-        this.$htmlContent.click(this.close.bind(this));
+        
+        this.$div.on("keydown", function (e) {
+            if (e.keyCode === KeyEvent.DOM_VK_ESCAPE) {
+                self.close();
+                e.stopImmediatePropagation();
+            }
+        });
     };
 
     HtmlViewer.prototype.close = function () {
