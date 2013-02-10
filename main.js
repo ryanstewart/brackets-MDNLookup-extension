@@ -40,12 +40,13 @@ define(function (require, exports, module) {
     require("lscache");
     var HtmlViewer         = require("HtmlViewer");
     var tagData = {};
-    var editor = EditorManager.getCurrentFullEditor();
+    var editor;
     var contextMenu = Menus.getContextMenu(Menus.ContextMenuIds.EDITOR_MENU);
     var COMMAND_ID = "com.digitalbackcountry.mdnextension";
     
     /* Register the commands */
     CommandManager.register("MDN Lookup", COMMAND_ID, handleMDNLookup);
+    KeyBindingManager.addBinding(COMMAND_ID, "Shift-Ctrl-E");
     
     /* Add menus */
     contextMenu.addMenuItem(COMMAND_ID);
@@ -84,7 +85,6 @@ define(function (require, exports, module) {
      *      or null if we're not going to provide anything.
      */
     function inlineMDNLookup(hostEditor, pos) {
-//        window.alert('holla back!');
         if (hostEditor._codeMirror.getOption("mode") !== "htmlmixed" && hostEditor._codeMirror.getOption("mode") !== "html") {
             return null;
         }
@@ -139,6 +139,7 @@ define(function (require, exports, module) {
     }
     
     function handleMDNLookup() {
+        editor = EditorManager.getCurrentFullEditor()
         inlineMDNLookup(editor);
     }
 });
